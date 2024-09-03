@@ -1,0 +1,8 @@
+Reference->Harkirat
+https://projects.100xdevs.com/tracks/ZSQI8YNE0iL6sT1hJpts/vercel-1
+
+Each Service Steps.txt provided with the steps to build that
+1-Upload Service
+2-Deploy Service 
+3-RequestHandlerService
+4-Frontend

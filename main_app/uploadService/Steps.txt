@@ -1,0 +1,120 @@
+https://projects.100xdevs.com/tracks/ZSQI8YNE0iL6sT1hJpts/vercel-1
+
+1-Install Node.js
+
+2-Initialise an empty typescript project
+npm init -y
+npm install typescript
+npx tsc --init
+example : index.ts 
+npx tsc -> convert ts to js output to folder mentioned in tsconfig.json
+
+
+3-Basic typescript configuration
+Change rootDir  to src 
+Change outDir  to dist  for the pro
+
+4-Add express , redis , aws-sdk , simple-git , cors as dependencies
+npm install express @types/express @types/cors redis aws-sdk simple-git cors
+// types/express -> typescript express write help res:no need to tell type req:no need
+aws-sdk-> s3 sqs queue simple-git -build wager help
+
+5-Initialize a simple express app in index.ts listening on port 3000
+// build any project npx tsc -b TS->JS DIST mein convert
+
+6-Initialise an endpoint that the user will hit and send the repo url as input
+app.post("",aysnc(){})
+
+7-Create a function that randomly generates an id for this session. Call it generate
+const MAX_LEN = 5;
+
+ function generate() {
+    let ans = "";
+    const subset = "123456789qwertyuiopasdfghjklzxcvbnm";
+    for (let i = 0; i < MAX_LEN; i++) {
+        ans += subset[Math.floor(Math.random() * subset.length)];
+    }
+    return ans;
+}
+
+8-Use simple-git to clone the repo into a new folder (/out/id ).
+import simpleGit from "simple-git";
+await simpleGit().clone(repoUrl, path.join(__dirname, `output/${id}`));
+__dirname looks like /user/shubham/from root to current folder
+
+9-Write a function that gets the paths of all the files in the /out/id folder
+since aws-sdk sdk.uploadFile() // need all the files in id folder
+getAllFiles() calls recursively folder src/file1 src/file2 inko separately path nikalo
+["path/id/file1","path/id/file2","path/id/file3"] uploadFile(1) then 2then 3
+import fs from "fs";
+import path from "path";
+
+export const getAllFiles = (folderPath: string) => {
+    let response: string[] = [];
+
+    const allFilesAndFolders = fs.readdirSync(folderPath);allFilesAndFolders.forEach(file => {
+        const fullFilePath = path.join(folderPath, file);
+        if (fs.statSync(fullFilePath).isDirectory()) {
+            response = response.concat(getAllFiles(fullFilePath))
+        } else {
+            response.push(fullFilePath);
+        }
+    });
+    return response;
+}
+
+10-Create an AWS/CLOUDFARE account // aws-sdk works with CLOUDFARE account s3->r2 yaha simply
+Account ID and API token create for accessing buckets
+Token value
+GJjjJpSSuADyWfwoxZjCccbgnp0wJ8e86anoSVFI
+Access Key ID
+50dffddf624ff1a6735ff7623596130e
+Secret Access Key
+88d02674da7cf5f101e95b0bf51eb69d280f9ec2fe6ac924d31710bd5bfea138
+endpoint
+https://d7a4c42a024029f72169ec6faf5cb79c.r2.cloudflarestorage.com
+
+11-Write a function that uploads a file given a path to S3
+Iterate over all the files and upload them to S3 one by one (or together)
+s3.upload({
+        Body: fileContent,
+        Bucket: "vercel",
+        Key: fileName, fileName => output/12312/src/App.jsx
+        // output->12312->src->file
+        //this fileName will be in folder structure at cloudfare automatically
+}).promise();
+await uploadFile(file.slice(__dirname.length + 1), file); 
+//all files upload with key name
+// x=12345 then x.slice(2) return 345 
+// for key /Users/shubham/vercel/dist/output/12312/src/App.jsx => output/12312/src/App.jsx trim kar rahe
+        
+12-Start redis locally
+nodejs->(lpush(1))->redisQueue->rpop()->AnotherNodejs
+docker run --name some-redis -p 6379:6379 -d redis //pull image
+
+
+13-Initialize a redis publisher
+import { createClient } from "redis";
+const publisher = createClient();
+publisher.connect();  //by defualt locally running redis connect // otherwise need to give credentials
+
+14- Use redis queues to push the uploadId in the queue
+publisher.lPush("build-queue", id);
+//check toh redis-cli open RPOP build-queue // same queue name
+
+
+15-Also store the current video id’s status as uploaded .
+publisher.hSet("status", id, "uploaded"); // set the status of the id
+
+16-Expose a status endpoint that the frontend will poll to get back the status of a video. It needs to check redis for the current value.
+const subscriber = createClient(); //to get data from redis
+subscriber.connect();
+// In redis pub can only set data and subscirber can only get data
+// dono get set alone ek nahi karega
+app.get("/status", async (req, res) => {
+    const id = req.query.id;
+    const response = await subscriber.hGet("status", id as string);
+    res.json({
+        status: response
+    })
+})

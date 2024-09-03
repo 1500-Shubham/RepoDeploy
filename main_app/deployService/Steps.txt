@@ -1,0 +1,78 @@
+Deploy service
+1-Initialise an empty typescript project.
+npm init -y
+npm install typescript
+npx tsc --init
+
+2-Configure the tsconfig.json.
+Change rootDir  to src 
+Change outDir  to dist  for the pro
+
+3-Installing dependencies
+npm install express @types/express @types/cors redis aws-sdk simple-git cors
+
+4-Initialize a redis subscriber
+import { createClient, commandOptions } from "redis";
+const subscriber = createClient();
+subscriber.connect();  //by defualt locally running redis connect // otherwise need to give credentials
+// localhost:6379
+
+5-Create an infinitely running for loop that pulls values from the redis queue.
+async function main() {
+    while(1) {
+        const res = await subscriber.brPop( //right pop //pushing from left tha
+            commandOptions({ isolated: true }),
+            'build-queue',
+            0 //wait infinitely untill something is coming // can put timeout if needed
+          );
+				console.log(res.element)
+    }
+}
+main();
+
+//CHECK redis-cli jao LPUSH queuename value
+
+6-Write a function called downloadS3Folder that downloads all the files from a given location in S3.
+@ts-ignore // this tells typesciript to ignore below error aage badh sakta  
+// check aws.ts commented**
+
+//1st list down all keys
+const allFiles = await s3.listObjectsV2({
+        Bucket: "vercel",
+        Prefix: prefix
+    }).promise();
+
+//2nd keys se ouput folder mein stream karo donwload karo
+const outputFile = fs.createWriteStream(finalOutputPath); //downloading from internet
+            s3.getObject({ //reading file and output to output file which is capable to write
+                Bucket: "vercel",
+                Key
+            }).createReadStream().pipe(outputFile).on("finish", () => {
+                resolve("");
+            })
+Theory
+A promise is an object that represents the eventual completion (or failure) 
+of an asynchronous operation and its resulting value. 
+Promises provide a cleaner and more manageable way to handle asynchronous code 
+compared to traditional callback-based approaches.
+
+
+7-Run npm run build to convert the React code into HTML/CSS files. (Bonus if this is containerized).
+utils.js
+const child = exec(`cd ${path.join(__dirname, `output/${id}`)} && npm install && npm run build`)
+ child.on('close', function(code) {
+           resolve("")
+});
+npm install npm run build ek child process banake kiye hai
+
+8-Write a function that uploads a directory to S3 (you can copy it from the last module).
+Same as upload service
+waha output/id/     filesnames
+
+all builded files uthao /output/id/build create hoga usko map karo
+here finally store dist/id/     filenames
+
+9- Store in the redis database that this specific upload has been processed.
+const publisher = createClient();
+publisher.connect();
+publisher.hSet("status", id, "deployed")

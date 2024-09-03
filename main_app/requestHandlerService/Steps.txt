@@ -1,0 +1,36 @@
+Request handler
+ 
+1-Initialize a Node.js Project, add TS configurations
+npm init -y
+npm install typescript
+npx tsc --init
+Configure the tsconfig.json.:
+Change rootDir  to src 
+Change outDir  to dist  for the pro
+npm install express @types/express @types/cors redis aws-sdk simple-git cors
+
+2-Initialize an express server running on port 3001
+app.listen(3001,()=>{
+    console.log("Listening")
+});
+
+3-** Making somewebsite points to your machine like localhost point to my machine
+cd /e
+vi /etc/hosts
+add your website 127.0.0.1 mywebsite.com
+if ssl error use http instead https use incognito
+
+4-Add a global route catch (/*) which handles all requests
+app.get("/*", async (req, res) => {
+   
+})
+
+5-Extract the sub-domain the request is coming from (id.vercel.com ⇒ id)
+{
+const host = req.hostname; // hostname gives me complete host mywebsite.com
+const id = host.split(".")[0]; // getting first dot before
+}
+
+6-Get the contents from S3 assuming the subdomain represents the id and forward it to the user. Add the correct content-type header to ensure the final file is parsed as a html file.
+const type = filePath.endsWith("html") ? "text/html" : filePath.endsWith("css") ? "text/css" : "application/javascript"
+    res.set("Content-Type", type);
